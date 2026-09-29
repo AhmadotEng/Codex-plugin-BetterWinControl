@@ -16,5 +16,9 @@ runtime/
 *.gif
 tests/results/
 tests/**/results.json
+tests/**/results-*.json
+tests/**/adapter-results*.json
+tests/**/controller-results*.json
 tests/**/verification.json
 tests/**/cancel-results.json
+tests/**/.dotnet-home/
