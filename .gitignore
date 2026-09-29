@@ -1,4 +1,6 @@
 .build/
+**/bin/
+**/obj/
 controller/bin/
 controller/obj/
 tests/fixture/bin/
