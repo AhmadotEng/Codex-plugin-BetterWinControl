@@ -1,0 +1,5 @@
+.packages/
+.dotnet-home/
+.nuget-http-cache/
+bin/
+obj/
