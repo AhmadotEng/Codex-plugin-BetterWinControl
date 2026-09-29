@@ -1,0 +1,730 @@
+{
+  "status": "passed",
+  "failure": null,
+  "elapsedMs": 891,
+  "checks": [
+    {
+      "stage": "capability_advertisement",
+      "supportedControls": 3,
+      "protectedCapabilitiesAbsent": true
+    },
+    {
+      "stage": "old_observation_rejected",
+      "error": "stale_observation: Obtain a fresh observation; observations expire and are invalidated after actions or pause/stop."
+    },
+    {
+      "stage": "out_of_scope_element_id_rejected",
+      "error": "unknown_element: Element is absent or protected in this observation."
+    },
+    {
+      "stage": "controller_insert_text",
+      "control": "edit_single",
+      "observedText": "alpha 世界🙂",
+      "actionResult": {
+        "outcome": "provider_completed",
+        "action": "insert_text",
+        "mechanism": "NativeEdit.EM_REPLACESEL",
+        "verified": false,
+        "evidence": {
+          "requestedLength": 4,
+          "selection": "control_current_selection",
+          "note": "Native message returned without a success flag. Verify resulting text with a fresh observation."
+        },
+        "paused": false,
+        "revokedDuringAction": false,
+        "focusBefore": {
+          "foreground": 131262,
+          "focus": 131262,
+          "focusQuerySucceeded": true,
+          "cursorX": 798,
+          "cursorY": 865,
+          "cursorQuerySucceeded": true
+        },
+        "focusAfter": {
+          "foreground": 131262,
+          "focus": 131262,
+          "focusQuerySucceeded": true,
+          "cursorX": 807,
+          "cursorY": 866,
+          "cursorQuerySucceeded": true
+        },
+        "next": "Observe again before any further action.",
+        "focusEvidence": "Before/after samples cannot exclude brief transitions or attribute a concurrent user's focus change."
+      }
+    },
+    {
+      "stage": "controller_insert_text",
+      "control": "edit_multi",
+      "observedText": "alpha 世界🙂",
+      "actionResult": {
+        "outcome": "provider_completed",
+        "action": "insert_text",
+        "mechanism": "NativeEdit.EM_REPLACESEL",
+        "verified": false,
+        "evidence": {
+          "requestedLength": 4,
+          "selection": "control_current_selection",
+          "note": "Native message returned without a success flag. Verify resulting text with a fresh observation."
+        },
+        "paused": false,
+        "revokedDuringAction": false,
+        "focusBefore": {
+          "foreground": 131262,
+          "focus": 131262,
+          "focusQuerySucceeded": true,
+          "cursorX": 815,
+          "cursorY": 866,
+          "cursorQuerySucceeded": true
+        },
+        "focusAfter": {
+          "foreground": 131262,
+          "focus": 131262,
+          "focusQuerySucceeded": true,
+          "cursorX": 815,
+          "cursorY": 866,
+          "cursorQuerySucceeded": true
+        },
+        "next": "Observe again before any further action.",
+        "focusEvidence": "Before/after samples cannot exclude brief transitions or attribute a concurrent user's focus change."
+      }
+    },
+    {
+      "stage": "controller_insert_text",
+      "control": "richedit_multi",
+      "observedText": "alpha 世界🙂",
+      "actionResult": {
+        "outcome": "provider_completed",
+        "action": "insert_text",
+        "mechanism": "NativeEdit.EM_REPLACESEL",
+        "verified": false,
+        "evidence": {
+          "requestedLength": 4,
+          "selection": "control_current_selection",
+          "note": "Native message returned without a success flag. Verify resulting text with a fresh observation."
+        },
+        "paused": false,
+        "revokedDuringAction": false,
+        "focusBefore": {
+          "foreground": 131262,
+          "focus": 131262,
+          "focusQuerySucceeded": true,
+          "cursorX": 816,
+          "cursorY": 866,
+          "cursorQuerySucceeded": true
+        },
+        "focusAfter": {
+          "foreground": 131262,
+          "focus": 131262,
+          "focusQuerySucceeded": true,
+          "cursorX": 816,
+          "cursorY": 866,
+          "cursorQuerySucceeded": true
+        },
+        "next": "Observe again before any further action.",
+        "focusEvidence": "Before/after samples cannot exclude brief transitions or attribute a concurrent user's focus change."
+      }
+    }
+  ],
+  "controller": "C:\\Users\\Administrator\\plugins\\windows-background-control\\controller\\bin\\Release\\net10.0-windows10.0.19041.0\\BackgroundControl.exe",
+  "controllerSha256": "6eb66d54da9a65f80a4608d398414a558aabed25db8d99ab3bb4a3481ab1b5b1",
+  "metadata": {
+    "sampleCount": 58,
+    "distinctForegroundHandles": 1,
+    "distinctFocusHandles": 1,
+    "distinctCursorPositions": 29,
+    "fixtureFocusObserved": false,
+    "samples": [
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          884
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1275,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1265,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1249,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1218,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1184,
+          885
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1139,
+          884
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1086,
+          881
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1033,
+          878
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          974,
+          874
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          909,
+          869
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          850,
+          862
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          796,
+          853
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          749,
+          847
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          716,
+          844
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          691,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          677,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          673,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          672,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          679,
+          843
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          693,
+          845
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          713,
+          849
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          737,
+          854
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          763,
+          859
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          784,
+          863
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          798,
+          865
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          811,
+          866
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          815,
+          866
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          816,
+          866
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          816,
+          866
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          816,
+          866
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          816,
+          866
+        ],
+        "foregroundPid": 7944,
+        "focusPid": 7944
+      }
+    ]
+  },
+  "children": [
+    {
+      "pid": 4280,
+      "exited": true
+    },
+    {
+      "pid": 3372,
+      "exited": true
+    }
+  ],
+  "limitations": "Own fixtures only; direct controller RPC, not MCP enumeration or existing user apps. No Zen keyboard claim."
+}

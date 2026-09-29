@@ -1,0 +1,497 @@
+{
+  "status": "passed",
+  "failure": null,
+  "elapsedMs": 672,
+  "checks": [
+    {
+      "status": "passed",
+      "results": [
+        {
+          "control": "edit_single",
+          "supported": true,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "edit_multi",
+          "supported": true,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "richedit_multi",
+          "supported": true,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "readonly",
+          "supported": false,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "password",
+          "supported": false,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "disabled",
+          "supported": false,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "protected_rich",
+          "supported": false,
+          "rejected": {
+            "wrong_pid": true,
+            "unrelated_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "stage": "production_supports_timeout",
+          "elapsedMs": 202,
+          "supported": false
+        }
+      ]
+    },
+    {
+      "control": "edit_single",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "edit_multi",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "richedit_multi",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "readonly",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    },
+    {
+      "control": "password",
+      "externalTextRead": "skipped; production Supports/Insert both rejected"
+    },
+    {
+      "control": "disabled",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    },
+    {
+      "control": "protected_rich",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    }
+  ],
+  "metadata": {
+    "sampleCount": 44,
+    "distinctForegroundHandles": 1,
+    "distinctFocusHandles": 1,
+    "distinctCursorPositions": 1,
+    "samples": [
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          0,
+          91
+        ]
+      }
+    ]
+  },
+  "children": [
+    {
+      "pid": 14620,
+      "exited": true
+    },
+    {
+      "pid": 17360,
+      "exited": true
+    }
+  ]
+}

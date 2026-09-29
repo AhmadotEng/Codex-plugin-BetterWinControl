@@ -1,0 +1,197 @@
+{
+  "status": "failed",
+  "failure": "AssertionError()",
+  "elapsedMs": 140,
+  "checks": [
+    {
+      "status": "passed",
+      "results": [
+        {
+          "control": "edit_single",
+          "supported": true,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "edit_multi",
+          "supported": true,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "richedit_multi",
+          "supported": true,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "readonly",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "password",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "disabled",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "protected_rich",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        }
+      ]
+    },
+    {
+      "control": "edit_single",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "edit_multi",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "richedit_multi",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "readonly",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    }
+  ],
+  "metadata": {
+    "sampleCount": 10,
+    "distinctForegroundHandles": 1,
+    "distinctFocusHandles": 1,
+    "distinctCursorPositions": 1,
+    "samples": [
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      },
+      {
+        "foreground": 131262,
+        "focus": 131262,
+        "cursor": [
+          1182,
+          853
+        ]
+      }
+    ]
+  },
+  "children": [
+    {
+      "pid": 14840,
+      "exited": true
+    },
+    {
+      "pid": 14168,
+      "exited": true
+    }
+  ]
+}

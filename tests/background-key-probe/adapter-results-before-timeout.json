@@ -1,0 +1,205 @@
+{
+  "status": "passed",
+  "failure": null,
+  "elapsedMs": 140,
+  "checks": [
+    {
+      "status": "passed",
+      "results": [
+        {
+          "control": "edit_single",
+          "supported": true,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "edit_multi",
+          "supported": true,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "richedit_multi",
+          "supported": true,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "readonly",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "password",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "disabled",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        },
+        {
+          "control": "protected_rich",
+          "supported": false,
+          "rejected": {
+            "wrong_root": true,
+            "protected_flag": true,
+            "readonly_flag": true
+          }
+        }
+      ]
+    },
+    {
+      "control": "edit_single",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "edit_multi",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "richedit_multi",
+      "observedText": "alpha 世界🙂",
+      "expectedText": "alpha 世界🙂",
+      "matched": true
+    },
+    {
+      "control": "readonly",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    },
+    {
+      "control": "password",
+      "externalTextRead": "skipped; production Supports/Insert both rejected"
+    },
+    {
+      "control": "disabled",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    },
+    {
+      "control": "protected_rich",
+      "observedText": "",
+      "expectedText": "",
+      "matched": true
+    }
+  ],
+  "metadata": {
+    "sampleCount": 9,
+    "distinctForegroundHandles": 1,
+    "distinctFocusHandles": 1,
+    "distinctCursorPositions": 1,
+    "samples": [
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      },
+      {
+        "foreground": 1377402,
+        "focus": 1377402,
+        "cursor": [
+          386,
+          728
+        ]
+      }
+    ]
+  },
+  "children": [
+    {
+      "pid": 11828,
+      "exited": true
+    },
+    {
+      "pid": 18256,
+      "exited": true
+    }
+  ]
+}
