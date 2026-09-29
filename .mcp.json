@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "windows_background_control": {
+      "command": "python",
+      "args": ["-u", "scripts/mcp_server.py"]
+    }
+  }
+}
