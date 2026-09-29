@@ -1,0 +1,24 @@
+{
+  "name": "windows-background-control",
+  "version": "0.1.0+codex.20260929221208",
+  "description": "Selected-window accessibility control and a real floating live preview on Windows.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex plugin - BetterWinControl",
+    "shortDescription": "Control a selected app with a live preview.",
+    "longDescription": "Local Windows controller with scoped background accessibility actions, window capture, a floating preview, pause and stop. Experimental; full macOS action coverage is still under development.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use Windows Background Control to inspect Zen without moving my mouse."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}
