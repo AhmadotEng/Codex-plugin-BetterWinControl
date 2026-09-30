@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>BetterWinControl connection</title><link rel="stylesheet" href="options.css"></head>
+<body><main><h1>BetterWinControl</h1><p id="status">Starting local connection…</p>
+<p>Zen stays ready for connection. Ask Codex to use BetterWinControl; the controller connects to the requested window automatically. Readiness alone does not inspect tabs or pages.</p>
+<p>To allow page controls on a site, click the extension's toolbar button while visiting that site. Tab selection does not require a site grant. Existing site grants are remembered.</p>
+<button id="stop" type="button">Disconnect and disable readiness</button>
+<button id="enable" type="button" hidden>Enable readiness</button>
+<h2>What is shared</h2><p>When you authorize a task, tab titles, addresses, page content and control state may be sent to the local BetterWinControl controller and the Codex task using it. This extension has no analytics and sends nothing directly to a remote server. Password fields are excluded. Page content can still contain personal information.</p>
+<p>Pause or Stop in the BetterWinControl preview ends or pauses the current control session. Zen remains ready for your next request. Disabling readiness here disconnects all sessions and prevents reconnection until you enable it again here or use the toolbar button. This choice survives browser restarts.</p>
+<p>An action already submitted to the browser may finish. Disconnecting never closes your tabs.</p>
+</main><script src="options.js"></script></body></html>

@@ -25,3 +25,12 @@ tests/**/controller-results*.json
 tests/**/verification.json
 tests/**/cancel-results.json
 **/.dotnet-home/
+
+# Keep private diagnostics and generated native test reports local.
+**/traces/
+*.jsonl
+native/tests/*-results.json
+native/tests/wpf/results.json
+native/tests/wpf/before-pointer-fix.json
+native/tests/wpf/physical-leave-reproducer.json
+native/vendor/minhook-v1.3.4.zip

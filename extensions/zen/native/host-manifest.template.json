@@ -1,0 +1,7 @@
+{
+  "name": "local.betterwincontrol.zen",
+  "description": "Authenticated local BetterWinControl Zen adapter",
+  "path": "ABSOLUTE_PATH_TO_REVIEWED_NATIVE_HOST_LAUNCHER",
+  "type": "stdio",
+  "allowed_extensions": ["zen-companion@betterwincontrol.local"]
+}

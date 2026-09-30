@@ -10,7 +10,7 @@ namespace WindowsBackgroundControlFixture;
 internal static class Program
 {
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
         var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
         var fixture = new Window
@@ -53,6 +53,15 @@ internal static class Program
         var counter = new TextBlock { Text = "Counter: 0", FontSize = 14, Margin = new Thickness(0, 10, 0, 0) };
         AutomationProperties.SetAutomationId(counter, "fixture-counter");
         panel.Children.Add(counter);
+        if (args.Contains("--many-nodes"))
+        {
+            for (int i = 0; i < 350; i++)
+            {
+                var item = new Button { Content = "Discovery fixture item " + i };
+                AutomationProperties.SetAutomationId(item, "discovery-item-" + i);
+                panel.Children.Add(item);
+            }
+        }
         var applied = 0;
         apply.Click += (_, _) =>
         {

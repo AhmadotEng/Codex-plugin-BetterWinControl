@@ -1,6 +1,8 @@
 # Codex plugin - BetterWinControl
 
-A local Codex plugin that controls a selected Windows application through accessibility providers and shows a real, movable live preview. The controller uses the existing desktop and does not inject physical mouse or keyboard input.
+A local Codex plugin developing independent background mouse/keyboard control for existing Windows applications, with accessibility as an additional backend and a live PiP. It never falls back to the shared foreground input stream.
+
+The native x86/x64 helper and MCP input path now pass owned Win32 and WPF fixture gates. **System-wide acceptance is unfinished.** See [the compatibility matrix](docs/COMPATIBILITY.md) for passed tests and remaining framework, menu, physical co-use and real-app work. The existing installed version is retained while these gates are developed.
 
 This is a working development version, **not a completed claim of macOS feature parity**. The preview belongs to this plugin; it is not Codex's built-in Computer Use preview.
 
@@ -21,8 +23,12 @@ There is no network listener, startup registration, background service, browser 
 | Tool | Behavior |
 | --- | --- |
 | `list_windows` | Lists visible application windows and selection eligibility. |
+| `interaction_targets` | Identifies verified owned dialogs/popups and owner parents, with exact native relationship evidence and explicit incomplete/unverified candidates. Does not automatically select them. |
 | `attach_window` | Selects an explicit HWND and opens its live preview without foregrounding the target. |
 | `observe` | Returns a bounded accessibility tree, a fresh observation ID and optional captured PNG. Password values are excluded. |
+| `capabilities` | Reports available backends, experimental status and unverified operations. |
+| `input` | Ordered virtual pointer/buttons/drag/wheel/text/keys/chords, bound to `observe.inputFrame.frameId`. Coordinates are captured physical pixels inside the verified client bounds. |
+| `browser` | Always-ready Zen companion: automatic authenticated binding to the selected native HWND, followed by tab/page actions and effect verification. No pairing-toolbar click; site permissions remain separate. |
 | `act` | Uses supported invoke, set-value, toggle, select, expand, collapse and scroll providers. `insert_text` handles validated native Edit/RichEdit selections. Re-observe after each action. |
 | `pause` / `resume` | Pauses or resumes the attached target; observations from before the transition cannot be reused. A provider call already in progress may finish. |
 | `stop` | Revokes the target, invalidates queued commands and terminates the controller/preview. Reattachment must be explicit. |
@@ -44,7 +50,7 @@ The tests are evidence for their recorded scope and artifact hashes. Before/afte
 
 ## Remaining work
 
-General key/chord input, hover and drag, broader app coverage, simultaneous user typing, persistent app permissions, native clipboard integration, and complete Codex restart/uninstall verification remain incomplete or unverified. Unsupported actions return an error rather than silently using foreground input. Protected authentication/security and terminal/Codex UI controls require user takeover.
+The native Win32 and WPF fixtures now verify key/chord input, hover, drag and Unicode. Physical co-use, other framework adapters, native menu loops, dialog routing, cross-application drag/drop, live browser integration, broad real-app coverage and restart/uninstall acceptance remain unfinished. Unsupported operations return errors. Consult the compatibility matrix before making a coverage claim.
 
 Pet attachment and Locked Use are documented optional Mac features; remote initiation depends on the host. These remain in the comparison inventory. Access to Codex's private native preview implementation is not a prerequisite for this plugin's core background-control experience.
 
@@ -53,6 +59,14 @@ Pet attachment and Locked Use are documented optional Mac features; remote initi
 | File | Responsibility |
 | --- | --- |
 | `controller/WindowController.cs` | Target identity, scoped UIA observation/actions, stale-state and pause/revocation checks. |
+| `controller/PagedObservation.cs` | Search, bounded subtree traversal and continuation beyond the old 200-element ceiling. |
+| `controller/InteractionTargets.cs` | Bounded native owner-chain discovery, exact identities and relationship evidence for explicit target changes. |
+| `controller/NativeInputSession.cs` | Ordered input, captured-frame identity/geometry tokens, cancellation, effect-verification status. |
+| `controller/NativeInputClient.cs` | Architecture-matched private helper transport and verified teardown acknowledgements. |
+| `controller/KeyChordParser.cs` | Reuses the public WinApp key parser for named shortcuts, preserving modifier sides and rejecting unsupported key distinctions. |
+| `controller/InputIsolationMonitor.cs` | Foreground/focus/capture WinEvent metadata monitoring; no physical keystroke logging. |
+| `native/` | Pinned MinHook helper, native host, x86/x64 build and independent fixture tests. |
+| `extensions/zen/` | Ordinary WebExtension, authenticated native bridge, packaging and companion tests. |
 | `controller/CapturePreview.cs` | Direct WGC capture, actual preview UI, resize handling and controls. |
 | `controller/Program.cs` | MTA controller worker, WPF dispatcher, parent lifetime and local RPC. |
 | `controller/WindowLease.cs` | Exclusive ownership of selected window scopes across controller processes. |
@@ -69,6 +83,21 @@ pwsh -NoProfile -File .\scripts\build.ps1 -Locked
 python .\tests\integration_test.py
 python .\tests\capture\cancel_audit.py
 ```
+
+Build the optional native engine with an existing llvm-mingw toolchain (no compiler is
+installed by this project):
+
+```powershell
+pwsh -NoProfile -File .\scripts\build-native.ps1 -Toolchain '<llvm-mingw directory>'
+python .\tests\native-input\acceptance.py
+python .\tests\native_mcp_test.py
+python .\tests\observation_search_test.py
+```
+
+Native helper teardown distinguishes released virtual input, removed hooks and
+independently verified module unload. A hung target callback leaves a revoked,
+pending helper until execution returns; the controller does not force-unload executing
+code or kill the target. Pause/Stop revoke queued input independently of the worker.
 
 Project dependency versions and hashes are pinned in `controller/packages.lock.json`. Python runtime code uses only the standard library. Build caches are confined to `.build/` and test/build output directories under this plugin; published runtime files are under `runtime/`. These generated directories are excluded from version control.
 

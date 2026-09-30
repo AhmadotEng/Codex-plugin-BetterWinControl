@@ -11,7 +11,7 @@ using Interop.UIAutomationClient;
 namespace BackgroundControl;
 
 /// <summary>All UIA methods run on the host's serialized MTA worker. Pause/Stop are nonblocking.</summary>
-public sealed class WindowController : IDisposable
+public sealed partial class WindowController : IDisposable
 {
     private readonly IUIAutomation2 automation;
     private readonly IUIAutomationCacheRequest cache;
@@ -33,17 +33,16 @@ public sealed class WindowController : IDisposable
     ];
     private static readonly HashSet<string> DeniedProcesses = new(StringComparer.OrdinalIgnoreCase)
     {
-        "codex", "chatgpt", "windowsterminal", "wt", "cmd", "powershell", "pwsh", "conhost", "openconsole",
-        "bash", "wsl", "mintty", "putty", "terminal", "wezterm", "alacritty", "credentialuibroker", "consent",
+        "codex", "chatgpt", "credentialuibroker", "consent",
         "logonui", "lockapp", "winlogon", "sechealthui", "securityhealthsystray", "msmpeng", "mrt",
-        "systemsettings", "mmc", "regedit", "1password", "keepass", "keepassxc", "bitwarden", "lastpass",
+        "1password", "keepass", "keepassxc", "bitwarden", "lastpass",
         "dashlane", "norton", "avastui", "avgui", "mbam", "mcafee", "kaspersky"
     };
     private static readonly Regex ProtectedText = new(
-        @"\b(password|passcode|credential|sign[ -]?in|log[ -]?in|two[ -]?factor|authentication|security settings|privacy settings|windows security|user account control|verify your identity|age verification)\b",
+        @"\b(password|passcode|credential|sign[ -]?in|log[ -]?in|two[ -]?factor|authentication|windows security|user account control|verify your identity|age verification)\b",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(50));
     private static readonly Regex ProtectedControlName = new(
-        @"^(?:codex|chatgpt|terminal|command prompt|powershell|developer console|javascript console|console input)(?:\s*[-:—].*)?$",
+        @"^(?:codex|chatgpt)(?:\s*[-:—].*)?$",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(50));
 
     public WindowController()
@@ -65,6 +64,8 @@ public sealed class WindowController : IDisposable
     public long TargetHwnd => Volatile.Read(ref target)?.Hwnd ?? 0;
     public string TargetTitle => Volatile.Read(ref target)?.Title ?? "";
     public bool Paused => Volatile.Read(ref paused) != 0;
+    public long SessionEpoch => Volatile.Read(ref epoch);
+    public event Action? Revoked;
 
     public object ListWindows()
     {
@@ -101,11 +102,20 @@ public sealed class WindowController : IDisposable
         bool committed = false;
         try
         {
-            var root = automation.ElementFromHandle(new nint(hwnd));
-            if (root.CurrentProcessId != identity.Pid) throw Error("scope_mismatch", "UIA root PID does not match the selected window.");
-            RejectSensitive(root);
-            var runtime = RuntimeId(root);
-            if (runtime.Length == 0) throw Error("identity_unavailable", "Selected root has no UIA runtime identity.");
+            // Native identity remains authoritative when an app supplies no accessibility root.
+            // Missing UIA must not silently disable the independent native-input backend.
+            int[] runtime = [];
+            try
+            {
+                var root = automation.ElementFromHandle(new nint(hwnd));
+                if (root is not null)
+                {
+                    if (root.CurrentProcessId != identity.Pid) throw Error("scope_mismatch", "UIA root PID does not match the selected window.");
+                    RejectSensitive(root);
+                    runtime = RuntimeId(root);
+                }
+            }
+            catch (COMException) { }
             identity = identity with { RuntimeId = runtime, Lease = lease };
             if (lease.IsReleased || Interlocked.CompareExchange(ref epoch, attachEpoch + 1, attachEpoch) != attachEpoch)
                 throw Error("revoked", "Attachment was cancelled.");
@@ -136,91 +146,7 @@ public sealed class WindowController : IDisposable
         }
     }
 
-    public object Observe(int maxElements = 200)
-    {
-        CheckDisposed();
-        maxElements = Math.Clamp(maxElements, 1, 200);
-        var current = ValidateTarget();
-        var operationEpoch = Volatile.Read(ref epoch);
-        var before = Native.Snapshot();
-        elements.Clear();
-        observationId = null;
-        var result = new List<object>();
-        var warnings = new List<string>();
-        var roots = ScopeWindows(current);
-        var watch = Stopwatch.StartNew();
-        bool truncated = false;
-        var visited = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var rootIdentity in roots)
-        {
-            if (result.Count >= maxElements || watch.ElapsedMilliseconds > 4000) { truncated = true; break; }
-            RequireEpoch(operationEpoch, current, allowPaused: true);
-            var root = automation.ElementFromHandleBuildCache(new nint(rootIdentity.Hwnd), cache);
-            var queue = new Queue<(IUIAutomationElement Element, int Depth, string? Parent)>();
-            queue.Enqueue((root, 0, null));
-            while (queue.Count > 0)
-            {
-                RequireEpoch(operationEpoch, current, allowPaused: true);
-                if (result.Count >= maxElements || watch.ElapsedMilliseconds > 4000) { truncated = true; break; }
-                var (element, depth, parent) = queue.Dequeue();
-                try
-                {
-                    var runtime = RuntimeId(element);
-                    var runtimeKey = rootIdentity.Hwnd + ":" + string.Join(",", runtime);
-                    if (!visited.Add(runtimeKey)) continue;
-                    var password = element.CachedIsPassword != 0 || LegacyProtected(element);
-                    var name = Limit(element.CachedName);
-                    var sensitive = password || ProtectedText.IsMatch(name) || ProtectedControlName.IsMatch(name);
-                    var id = "e" + (result.Count + 1);
-                    var bounds = element.CachedBoundingRectangle;
-                    var typeId = element.CachedControlType;
-                    var actions = sensitive ? Array.Empty<string>() : CachedActions(element);
-                    var observedValue = sensitive ? (Text: (string?)null, ReadOnly: (bool?)null) : ObserveValue(element, actions);
-                    var nativeHwnd = element.CachedNativeWindowHandle;
-                    if (!sensitive && NativeEditActions.Supports(nativeHwnd, new nint(rootIdentity.Hwnd), rootIdentity.Pid,
-                        isPasswordOrProtected: false, isReadOnly: observedValue.ReadOnly ?? false))
-                        actions = actions.Append("insert_text").ToArray();
-                    result.Add(new { id, parent, name = password ? "[protected]" : name,
-                        automationId = password ? "" : Limit(element.CachedAutomationId),
-                        controlType = element.CachedLocalizedControlType, controlTypeId = typeId,
-                        bounds = new { left = bounds.left, top = bounds.top, right = bounds.right, bottom = bounds.bottom },
-                        enabled = element.CachedIsEnabled != 0, offscreen = element.CachedIsOffscreen != 0,
-                        isPassword = password, protectedElement = sensitive, patterns = actions, rootHwnd = rootIdentity.Hwnd,
-                        value = observedValue.Text, readOnly = observedValue.ReadOnly });
-                    if (!sensitive && runtime.Length > 0)
-                        elements[id] = new(element, rootIdentity, runtime, name, element.CachedAutomationId,
-                            typeId, bounds.left, bounds.top, bounds.right, bounds.bottom, SemanticFingerprint(element, actions), nativeHwnd);
-                    // Never descend into protected fields or authentication/security subtrees.
-                    if (sensitive) continue;
-                    if (depth >= MaxDepth) { truncated = true; continue; }
-                    var children = new List<IUIAutomationElement>();
-                    var child = walker.GetFirstChildElementBuildCache(element, cache);
-                    var siblingIds = new HashSet<string>();
-                    while (child is not null && children.Count < maxElements && watch.ElapsedMilliseconds <= 4000)
-                    {
-                        RequireEpoch(operationEpoch, current, allowPaused: true);
-                        if (!siblingIds.Add(string.Join(",", RuntimeId(child)))) { warnings.Add("Provider returned a repeating sibling identity."); break; }
-                        children.Add(child);
-                        child = walker.GetNextSiblingElementBuildCache(child, cache);
-                    }
-                    if (child is not null) truncated = true;
-                    foreach (var childElement in children) queue.Enqueue((childElement, depth + 1, id));
-                }
-                catch (COMException ex) { warnings.Add("Element unavailable: HRESULT 0x" + ex.HResult.ToString("X8")); }
-            }
-        }
-        ValidateTarget();
-        RequireEpoch(operationEpoch, current, allowPaused: true);
-        var after = Native.Snapshot();
-        CheckFocus(before, after, current);
-        observationId = Guid.NewGuid().ToString("N");
-        observationEpoch = Volatile.Read(ref epoch);
-        observationExpiry = DateTimeOffset.UtcNow + ObservationLifetime;
-        return new { observationId, window = WindowInfo(current), elements = result, truncated, traversal = "breadth_first",
-            warnings = warnings.Distinct().Take(10).ToArray(), expiresAt = observationExpiry,
-            paused = Paused, focusBefore = before, focusAfter = after,
-            scope = roots.Select(r => new { hwnd = r.Hwnd, pid = r.Pid }).ToArray() };
-    }
+    public object Observe(int maxElements = 200) => ObservePage(maxElements);
 
     public object Act(string observationId, string elementId, string action, string? value = null, double amount = 0)
     {
@@ -373,6 +299,7 @@ public sealed class WindowController : IDisposable
     {
         Volatile.Write(ref paused, 1);
         Interlocked.Increment(ref epoch);
+        Revoked?.Invoke();
         return new { paused = true, inFlightProviderCallMayFinish = true };
     }
 
@@ -400,6 +327,7 @@ public sealed class WindowController : IDisposable
         Volatile.Write(ref paused, 1);
         var previous = Interlocked.Exchange(ref target, null);
         Interlocked.Increment(ref epoch);
+        Revoked?.Invoke();
         previous?.Lease?.Dispose();
         return new { stopped = true, targetRevoked = true, inFlightProviderCallMayFinish = true };
     }
@@ -414,7 +342,7 @@ public sealed class WindowController : IDisposable
         }
         return new { attached = current is not null, paused = Paused, window = current is null ? null : WindowInfo(current),
             observationId = observationEpoch == Volatile.Read(ref epoch) && DateTimeOffset.UtcNow < observationExpiry ? observationId : null,
-            actionTransport = "UIA semantic providers only", physicalInputInjection = false };
+            sessionEpoch = SessionEpoch, actionTransport = "UIA semantic providers; native input availability via capabilities", physicalInputInjection = false };
     }
 
     private Target ValidateTarget()
@@ -428,8 +356,9 @@ public sealed class WindowController : IDisposable
             if (now.Pid != current.Pid || now.StartTicks != current.StartTicks || now.ThreadId != current.ThreadId || now.ClassName != current.ClassName)
                 throw Error("stale_target", "HWND/process identity changed.");
             RejectDenied(now);
-            if (!RuntimeId(automation.ElementFromHandle(new nint(current.Hwnd))).SequenceEqual(current.RuntimeId))
-                throw Error("stale_target", "Selected UIA root identity changed.");
+            // A provider can disappear/recreate its UIA root without replacing the
+            // native window. Native input and capture must remain independent of it.
+            // Semantic actions revalidate their element and root in ValidateBinding.
             return current;
         }
         catch (Exception ex) when (ex is InvalidOperationException or COMException or ArgumentException or System.ComponentModel.Win32Exception)
@@ -467,16 +396,19 @@ public sealed class WindowController : IDisposable
         throw Error("scope_mismatch", "Element no longer descends from its observed selected window.");
     }
 
-    private List<Target> ScopeWindows(Target current)
+    private List<Target> ScopeWindows(Target current, out bool incomplete)
     {
         var roots = new List<Target> { current };
+        bool limited = false;
         Native.EnumWindows((hwnd, _) =>
         {
             if (hwnd.ToInt64() == current.Hwnd || !Native.IsWindowVisible(hwnd) || !IsInScope(hwnd.ToInt64(), current)) return true;
             try { var identity = ReadIdentity(hwnd.ToInt64()); if (Denial(identity) is null) roots.Add(identity); }
-            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or System.ComponentModel.Win32Exception) { }
-            return roots.Count < 16;
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or System.ComponentModel.Win32Exception) { limited = true; }
+            if (roots.Count >= 16) { limited = true; return false; }
+            return true;
         }, nint.Zero);
+        incomplete = limited;
         return roots;
     }
 
@@ -510,8 +442,7 @@ public sealed class WindowController : IDisposable
         if (item.Pid == Environment.ProcessId) return "controller_process";
         if (DeniedProcesses.Contains(item.ProcessName) || item.ProcessName.Contains("codex", StringComparison.OrdinalIgnoreCase) ||
             item.ProcessName.Contains("credential", StringComparison.OrdinalIgnoreCase)) return "protected_application";
-        if (item.ClassName is "ConsoleWindowClass" or "CASCADIA_HOSTING_WINDOW_CLASS" ||
-            item.ClassName == "#32770" && ProtectedText.IsMatch(item.Title))
+        if (item.ClassName == "#32770" && ProtectedText.IsMatch(item.Title))
             return "protected_application";
         if (ProtectedText.IsMatch(item.Title)) return "authentication_or_security_window";
         return null;
@@ -587,7 +518,8 @@ public sealed class WindowController : IDisposable
     private static int[] RuntimeId(IUIAutomationElement element) => element.GetRuntimeId() ?? [];
     private static string Limit(string? value) => value is null ? "" : value.Length <= 1024 ? value : value[..1024];
     private static string LimitValue(string? value) => value is null ? "" : value.Length <= 4096 ? value : value[..4096];
-    private static object WindowInfo(Target current) => new { hwnd = current.Hwnd, pid = current.Pid, title = current.Title, process = current.ProcessName };
+    private static object WindowInfo(Target current) => new { hwnd = current.Hwnd, pid = current.Pid, startTicks = current.StartTicks,
+        threadId = current.ThreadId, className = current.ClassName, title = current.Title, process = current.ProcessName };
     private void RequireEpoch(long expected, Target current, bool allowPaused)
     {
         if (Volatile.Read(ref epoch) != expected || !ReferenceEquals(Volatile.Read(ref target), current))
@@ -603,7 +535,7 @@ public sealed class WindowController : IDisposable
     }
     public Action CaptureActiveSessionGuard()
     {
-        // Resolve UIA/provider identity before a caller acquires a short-lived external lock.
+        // Resolve native identity before a caller acquires a short-lived external lock.
         var expected = Volatile.Read(ref epoch);
         var current = ValidateTarget();
         RequireEpoch(expected, current, allowPaused: false);
@@ -614,7 +546,7 @@ public sealed class WindowController : IDisposable
             RequireEpoch(expected, current, allowPaused: false);
         };
     }
-    private void InvalidateObservation() { observationId = null; elements.Clear(); Interlocked.Increment(ref epoch); }
+    private void InvalidateObservation() { observationId = null; elements.Clear(); discovery = null; }
     private void CheckDisposed() { if (Volatile.Read(ref disposed) != 0) throw Error("disposed", "Controller is disposed."); }
     private void CheckFocus(InputState before, InputState after, Target current)
     {

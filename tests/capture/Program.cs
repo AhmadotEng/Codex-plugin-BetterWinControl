@@ -107,6 +107,22 @@ internal static class Program
                     surfaceWidth=parts.Surface.ActualWidth,surfaceHeight=parts.Surface.ActualHeight,widthErrorPixels=widthError,heightErrorPixels=heightError,
                     outerWidth=outer.Width,outerHeight=outer.Height,clientWidth=client.Width,clientHeight=client.Height,dpi.DpiScaleX,dpi.DpiScaleY};
             }
+            object RequirePointerPosition(CaptureSnapshot frame,double x,double y,string stage)
+            {
+                var parts=PreviewParts();parts.Window.UpdateLayout();
+                var pointer=Field<System.Windows.Shapes.Path>(preview!,"_virtualPointer");
+                var dpi=VisualTreeHelper.GetDpi(parts.Window);
+                Require(pointer.Visibility==Visibility.Visible&&!pointer.IsHitTestVisible,stage+": acknowledged pointer visible without intercepting input");
+                var geometry=pointer.RenderedGeometry.GetFlattenedPathGeometry();
+                Require(geometry.Figures.Count>0,stage+": real pointer path geometry");
+                var hotspot=pointer.TranslatePoint(geometry.Figures[0].StartPoint,parts.Surface);
+                var imageOrigin=parts.Image.TranslatePoint(new System.Windows.Point(),parts.Surface);
+                var expected=new System.Windows.Point(imageOrigin.X+x*parts.Image.ActualWidth,imageOrigin.Y+y*parts.Image.ActualHeight);
+                var errorX=Math.Abs(hotspot.X-expected.X)*dpi.DpiScaleX;var errorY=Math.Abs(hotspot.Y-expected.Y)*dpi.DpiScaleY;
+                Require(errorX<=1.01&&errorY<=1.01,stage+": pointer hotspot follows displayed source within one physical pixel ("+errorX+", "+errorY+")");
+                return new{normalizedX=x,normalizedY=y,hotspotX=hotspot.X,hotspotY=hotspot.Y,expectedX=expected.X,expectedY=expected.Y,
+                    errorXPhysicalPixels=errorX,errorYPhysicalPixels=errorY,sourceWidth=frame.Width,sourceHeight=frame.Height};
+            }
             async Task AspectSettled(CaptureSnapshot frame,string stage)
             {
                 // A frame may arrive at its new dimensions before the capture restart debounce finishes.
@@ -143,6 +159,7 @@ internal static class Program
                 var baselineWidth=(int)Math.Ceiling(Math.Max(400,Math.Max(parts.Window.MinWidth*dpi.DpiScaleX,parts.Window.MinHeight*dpi.DpiScaleY*ratio)));
                 var baselineHeight=(int)Math.Round((baselineWidth-extraWidth)/ratio)+extraHeight;
                 var cases=new List<object>();
+                preview!.SetVirtualPointer(.25,.75);
                 foreach(var edge in Enumerable.Range(1,8))
                 {
                     Require(Native.SetWindowPos(parts.Handle,0,60,60,baselineWidth,baselineHeight,0x14),"reset own preview dimensions without activation");
@@ -173,7 +190,8 @@ internal static class Program
                     },label+": opposite edge/corner remains anchored on edge "+edge);
                     Require(Native.SetWindowPos(parts.Handle,0,proposal.Left,proposal.Top,proposal.Width,proposal.Height,0x14),"apply constrained own preview RECT");
                     await Task.Delay(18);NoFocus();
-                    cases.Add(new{edge,proposed=originalProposal.ToArray(),constrained=proposal.ToArray(),fill=RequireFullImage(frame,label+"_edge_"+edge)});
+                    cases.Add(new{edge,proposed=originalProposal.ToArray(),constrained=proposal.ToArray(),fill=RequireFullImage(frame,label+"_edge_"+edge),
+                        pointer=RequirePointerPosition(frame,.25,.75,label+"_edge_"+edge+"_pointer")});
                 }
                 // A deliberately sub-minimum proposal must retain the ratio after enforcing both minimum dimensions.
                 Native.GetWindowRect(parts.Handle,out var beforeMinimum);var minimum=beforeMinimum;
@@ -184,6 +202,7 @@ internal static class Program
                 Require(Native.SetWindowPos(parts.Handle,0,minimum.Left,minimum.Top,minimum.Width,minimum.Height,0x14),"apply minimum own preview RECT");
                 await Task.Delay(18);NoFocus();
                 checks.Add(new{stage=label+"_native_sizing_all_edges",passed=true,cases,minimum=minimum.ToArray(),minimumFill=RequireFullImage(frame,label+"_minimum"),
+                    minimumPointer=RequirePointerPosition(frame,.25,.75,label+"_minimum_pointer"),
                     input="WM_SIZING and SetWindowPos only for own-process preview; no physical input or user windows changed."});
             }
             void Click(string id)
@@ -195,8 +214,32 @@ internal static class Program
             preview.Start(targetHwnd,"Capture fixture");
             var blue=await Frame("initial",32,64,224,-1);
             await AspectSettled(blue,"initial_capture_aspect");
+            Require(Field<System.Windows.Shapes.Path>(preview,"_virtualPointer").Visibility==Visibility.Collapsed,"pointer starts hidden before acknowledged coordinates");
+            preview.SetVirtualPointer(.5,.5);
+            checks.Add(new{stage="initial_virtual_pointer_center",passed=true,position=RequirePointerPosition(blue,.5,.5,"initial pointer")});
             var firstSession=RequireBorderlessSession("initial_borderless_session_configuration");
             var offThread=await Task.Run(()=>preview.Snapshot(true));Require(offThread.PngBase64 is not null,"off-thread PNG snapshot");checks.Add(new{stage="off_thread_snapshot",passed=true});
+            // Keep the source unchanged long enough that a change-driven WGC frame is stale.
+            // A new version plus a new grabber proves refresh obtained a real new capture,
+            // instead of merely relabeling the previous bitmap with a recent timestamp.
+            await Task.Delay(1150);NoFocus();
+            var stale=preview.Snapshot(true);var staleGrabber=Field<object>(preview,"_grabber");
+            Require(stale.AgeMs>1100&&stale.PngBase64 is not null,"static capture is genuinely older than 1100 ms before input refresh");
+            var beforeRefreshParts=PreviewParts();Native.GetClientRect(beforeRefreshParts.Handle,out var beforeRefreshClient);
+            var freshWatch=Stopwatch.StartNew();
+            var refreshed=await Task.Run(()=>preview.SnapshotForInputAsync(true));
+            Require(refreshed.FrameVersion>stale.FrameVersion&&refreshed.AgeMs is >=0 and <=750,"input observation obtains a real fresh frame/version");
+            Require(!ReferenceEquals(staleGrabber,Field<object>(preview,"_grabber")),"stale input observation starts a new selected-window capture session");
+            Require(refreshed.Width==stale.Width&&refreshed.Height==stale.Height&&refreshed.PngBase64==stale.PngBase64,"static refresh preserves exact source pixels and dimensions");
+            Native.GetClientRect(PreviewParts().Handle,out var afterRefreshClient);
+            Require(beforeRefreshClient.Width==afterRefreshClient.Width&&beforeRefreshClient.Height==afterRefreshClient.Height,"static refresh preserves preview dimensions");
+            File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(resultPath)!,"static-refreshed.png"),Convert.FromBase64String(refreshed.PngBase64!));
+            checks.Add(new{stage="static_window_input_refresh",passed=true,staleAgeMs=stale.AgeMs,oldVersion=stale.FrameVersion,
+                freshAgeMs=refreshed.AgeMs,newVersion=refreshed.FrameVersion,refreshElapsedMs=freshWatch.ElapsedMilliseconds,
+                exactSourcePixelsPreserved=true,newGrabber=true,geometry=RequireFullImage(refreshed,"static refreshed geometry"),
+                pointer=RequirePointerPosition(refreshed,.5,.5,"static refreshed pointer")});
+            RequireBorderlessSession("static_refresh_borderless_session_configuration");
+            blue=refreshed;
             cover=Fixture(34,34,320,240,Colors.Magenta);cover.Show();await Task.Delay(80);
             Native.GetWindowRect(targetHwnd,out var bounds);Require(Native.TestCover(bounds,new WindowInteropHelper(cover).Handle),"own cover");
             checks.Add(new{stage="own_cover_verified",passed=true});
@@ -205,17 +248,20 @@ internal static class Program
             var red=await Frame("resized",224,48,32,green.FrameVersion,green.Width);
             Native.GetWindowRect(targetHwnd,out bounds);Require(Native.TestCover(bounds,new WindowInteropHelper(cover).Handle),"resized own cover");
             await AspectSettled(red,"changed_landscape_capture_aspect");
+            checks.Add(new{stage="virtual_pointer_after_landscape_source_change",passed=true,position=RequirePointerPosition(red,.5,.5,"landscape source pointer")});
             var resizedSession=RequireBorderlessSession("resized_borderless_session_configuration");
             Require(!ReferenceEquals(firstSession,resizedSession),"source resize starts a new configured capture session");
             await ResizeCases(red,"landscape");
             target.Width=120;target.Height=224;
             var portrait=await Frame("portrait",224,48,32,red.FrameVersion,red.Width);
             await AspectSettled(portrait,"changed_portrait_capture_aspect");
+            checks.Add(new{stage="virtual_pointer_after_portrait_source_change",passed=true,position=RequirePointerPosition(portrait,.25,.75,"portrait source pointer")});
             RequireBorderlessSession("portrait_borderless_session_configuration");
             await ResizeCases(portrait,"portrait");
             target.Width=224;target.Height=152;
             red=await Frame("landscape_restored",224,48,32,portrait.FrameVersion,portrait.Width);
             await AspectSettled(red,"landscape_capture_aspect_restored");
+            checks.Add(new{stage="virtual_pointer_after_source_restore",passed=true,position=RequirePointerPosition(red,.25,.75,"restored source pointer")});
             RequireBorderlessSession("restored_borderless_session_configuration");
             var ownPreview=app.Windows.OfType<Window>().Single(w=>w.Title.StartsWith("Background control — ",StringComparison.Ordinal));
             var chrome=Field<FrameworkElement>(preview,"_chrome");
@@ -234,17 +280,23 @@ internal static class Program
                 {RoutedEvent=entered?UIElement.MouseEnterEvent:UIElement.MouseLeaveEvent,Source=surface});
                 await Task.Delay(300);ownPreview.UpdateLayout();NoFocus();
             }
-            object RenderPreview(string filename)
+            RenderTargetBitmap RenderPreviewBitmap()
             {
                 ownPreview.UpdateLayout();
                 var bitmap=new RenderTargetBitmap((int)Math.Ceiling(ownPreview.ActualWidth),(int)Math.Ceiling(ownPreview.ActualHeight),96,96,PixelFormats.Pbgra32);
                 bitmap.Render(ownPreview);
+                return bitmap;
+            }
+            object RenderPreview(string filename)
+            {
+                var bitmap=RenderPreviewBitmap();
                 var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
                 using var bytes=new MemoryStream();encoder.Save(bytes);var data=bytes.ToArray();
                 File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(resultPath)!,filename),data);
                 return new{filename,width=bitmap.PixelWidth,height=bitmap.PixelHeight,sha256=Convert.ToHexString(SHA256.HashData(data))};
             }
             await Hover(false);
+            preview.SetVirtualPointer(null,null);
             Require((chrome.Opacity<=0.01||chrome.Visibility!=Visibility.Visible)&&!chrome.IsHitTestVisible,"idle overlay hidden and not interactive");
             var imageOrigin=previewImage.TranslatePoint(new System.Windows.Point(0,0),surface);
             Require(Math.Abs(surface.ActualWidth-ownPreview.ActualWidth)<=1&&Math.Abs(surface.ActualHeight-ownPreview.ActualHeight)<=1,"capture surface uses whole borderless client area");
@@ -254,6 +306,43 @@ internal static class Program
             checks.Add(new{stage="idle_hover_controls_hidden",passed=true,chrome.Opacity,chrome.Visibility,chrome.IsHitTestVisible,
                 imageWidth=previewImage.ActualWidth,imageHeight=previewImage.ActualHeight,surfaceWidth=surface.ActualWidth,surfaceHeight=surface.ActualHeight,
                 render=RenderPreview("preview-idle.png"),input="Synthetic WPF MouseLeave routed event; physical pointer was not moved."});
+            var pointerPath=Field<System.Windows.Shapes.Path>(preview,"_virtualPointer");
+            var pointerPositions=new List<object>();
+            foreach(var point in new[]{(0d,0d),(.5d,0d),(1d,0d),(0d,.5d),(.5d,.5d),(1d,.5d),(0d,1d),(.5d,1d),(1d,1d)})
+            {
+                preview.SetVirtualPointer(point.Item1,point.Item2);
+                pointerPositions.Add(RequirePointerPosition(red,point.Item1,point.Item2,"pointer edge/center"));
+            }
+            checks.Add(new{stage="virtual_pointer_all_edges_and_center_geometry",passed=true,positions=pointerPositions,
+                limitation="Geometry verifies the path hotspot, including clipped boundary positions; it does not claim the entire pointer is visible at the last source pixel."});
+            preview.SetVirtualPointer(null,null);var pointerHidden=RenderPreviewBitmap();
+            preview.SetVirtualPointer(.5,.5);RequirePointerPosition(red,.5,.5,"rendered pointer center");
+            var pointerVisible=RenderPreviewBitmap();
+            int pixelWidth=pointerHidden.PixelWidth,pixelHeight=pointerHidden.PixelHeight,stride=pixelWidth*4;
+            var hiddenPixels=new byte[stride*pixelHeight];var shownPixels=new byte[hiddenPixels.Length];
+            pointerHidden.CopyPixels(hiddenPixels,stride,0);pointerVisible.CopyPixels(shownPixels,stride,0);
+            var changedPixels=new List<(int X,int Y)>();
+            for(int y=0;y<pixelHeight;y++)for(int x=0;x<pixelWidth;x++)
+            {
+                int offset=y*stride+x*4;
+                if(Enumerable.Range(0,4).Any(channel=>hiddenPixels[offset+channel]!=shownPixels[offset+channel]))changedPixels.Add((x,y));
+            }
+            Require(changedPixels.Count>20,"actual pointer changes preview pixels");
+            var tip=pointerPath.TranslatePoint(new System.Windows.Point(),ownPreview);
+            Require(changedPixels.All(p=>p.X>=tip.X-2&&p.X<=tip.X+17&&p.Y>=tip.Y-2&&p.Y<=tip.Y+24),"pointer pixel changes confined to expected hotspot footprint");
+            Require(changedPixels.Any(p=>Math.Abs(p.X-tip.X)<=2&&Math.Abs(p.Y-tip.Y)<=2),"actual rendered pixels reach pointer hotspot");
+            checks.Add(new{stage="virtual_pointer_actual_rendered_pixels",passed=true,changedPixelCount=changedPixels.Count,
+                bounds=new[]{changedPixels.Min(p=>p.X),changedPixels.Min(p=>p.Y),changedPixels.Max(p=>p.X),changedPixels.Max(p=>p.Y)},
+                hotspot=new[]{tip.X,tip.Y},render=RenderPreview("preview-virtual-pointer.png")});
+            await Task.Delay(100);RequirePointerPosition(red,.5,.5,"pointer remains at acknowledged position across fresh captures");NoFocus();
+            foreach(var invalid in new (double? X,double? Y)[]{(null,null),(null,.5),(.5,null),(-.1,.5),(.5,1.1),(double.NaN,.5)})
+            {
+                preview.SetVirtualPointer(invalid.X,invalid.Y);Require(pointerPath.Visibility==Visibility.Collapsed,"missing or invalid acknowledged coordinates hide pointer");
+            }
+            var pointerCleared=RenderPreviewBitmap();var clearedPixels=new byte[hiddenPixels.Length];pointerCleared.CopyPixels(clearedPixels,stride,0);
+            Require(hiddenPixels.SequenceEqual(clearedPixels),"clearing pointer restores exact idle pixels");
+            checks.Add(new{stage="virtual_pointer_cleared_and_no_unsolicited_motion",passed=true,
+                input="Direct SetVirtualPointer calls simulate acknowledged native state. No native input action or physical cursor movement is performed; acknowledgement ordering is tested separately by MCP integration."});
             await Hover(true);
             Require(chrome.Visibility==Visibility.Visible&&chrome.Opacity>=0.99&&chrome.IsHitTestVisible,"hover overlay visible and interactive");
             Require(FindButton(ownPreview,"preview.pause") is {IsVisible:true}&&FindButton(ownPreview,"preview.stop") is {IsVisible:true},"hover contains working controls");
@@ -289,7 +378,7 @@ internal static class Program
             checks,commands,remainingOwnWindows=app.Windows.Count,fixtureOrPreviewFocusObserved=samples.Any(s=>s.ForegroundPid==Environment.ProcessId||s.FocusPid==Environment.ProcessId),
             distinctForegroundHandles=samples.Select(s=>s.Foreground).Distinct().Count(),distinctFocusHandles=samples.Select(s=>s.Focus).Distinct().Count(),
             distinctCursorPositions=samples.Select(s=>(s.CursorX,s.CursorY)).Distinct().Count(),samples,
-            limitations="Own WPF fixture only. WM_SIZING messages exercise the real native preview hook for all eight edges in landscape and portrait, including minimum dimensions; only this process's preview receives SetWindowPos. No physical resize drag was injected. Hover transitions use synthetic WPF MouseEnter/MouseLeave routed events without moving the physical pointer; real WPF visuals are rendered in each state. Semantic button invocation tests actual callback wiring without physical input. No arbitrary-app, protected-content, concurrent-user, or native Codex UI integration claim."};
+            limitations="Own WPF fixture only. WM_SIZING messages exercise the real native preview hook for all eight edges in landscape and portrait, including minimum dimensions; only this process's preview receives SetWindowPos. No physical resize drag was injected. Hover transitions use synthetic WPF MouseEnter/MouseLeave routed events without moving the physical pointer; real WPF visuals are rendered in each state. Virtual pointer tests feed SetVirtualPointer directly to simulate acknowledged native coordinates: geometry and actual center pixels are verified, not upstream acknowledgement ordering or desktop cursor interaction. Semantic button invocation tests actual callback wiring without physical input. No arbitrary-app, protected-content, concurrent-user, or native Codex UI integration claim."};
         File.WriteAllText(resultPath,JsonSerializer.Serialize(result,new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine(JsonSerializer.Serialize(new{result.status,failure,result.elapsedMs,result.remainingOwnWindows}));app.Shutdown(failure is null?0:1);
     }
     static Button? FindButton(DependencyObject root,string id)

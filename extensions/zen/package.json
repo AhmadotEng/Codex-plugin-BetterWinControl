@@ -1,0 +1,12 @@
+{
+  "name": "betterwincontrol-zen-companion",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/adapter.test.js tests/page.test.js tests/background.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "web-ext": "10.7.0"
+  }
+}

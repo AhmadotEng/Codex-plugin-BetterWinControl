@@ -5,6 +5,7 @@ $controllerProject = Join-Path $pluginRoot 'controller\BackgroundControl.csproj'
 $env:DOTNET_CLI_HOME = Join-Path $pluginRoot '.build\dotnet-home'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $env:DOTNET_NOLOGO = '1'
+$env:DOTNET_GENERATE_ASPNET_CERTIFICATE = 'false'
 $env:NUGET_PACKAGES = Join-Path $pluginRoot '.build\packages'
 $env:NUGET_HTTP_CACHE_PATH = Join-Path $pluginRoot '.build\http-cache'
 $restoreArguments = @('restore', $controllerProject, '--configfile', (Join-Path $pluginRoot 'controller\NuGet.Config'), '--verbosity', 'minimal')

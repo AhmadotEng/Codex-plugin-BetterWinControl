@@ -1,15 +1,15 @@
 {
   "name": "windows-background-control",
   "version": "0.1.0+codex.20260929221208",
-  "description": "Selected-window accessibility control and a real floating live preview on Windows.",
+  "description": "Experimental independent Windows input, scoped accessibility and a live floating preview.",
   "author": {
     "name": "Local developer"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex plugin - BetterWinControl",
-    "shortDescription": "Control a selected app with a live preview.",
-    "longDescription": "Local Windows controller with scoped background accessibility actions, window capture, a floating preview, pause and stop. Experimental; full macOS action coverage is still under development.",
+    "shortDescription": "Background input with verified scope and a live preview.",
+    "longDescription": "Local Windows controller with an experimental x86/x64 virtual input engine, scoped accessibility, optional Zen companion and a live PiP. Compatibility and physical co-use remain explicit acceptance gates; system-wide macOS parity is unfinished.",
     "developerName": "Local developer",
     "category": "Productivity",
     "capabilities": [
@@ -17,7 +17,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use Windows Background Control to inspect Zen without moving my mouse."
+      "Use BetterWinControl to select my existing Stremio tab, then switch to my YouTube video and pause it in the background. Show the live PiP and verify each result without taking over my mouse or keyboard."
     ]
   },
   "mcpServers": "./.mcp.json"

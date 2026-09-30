@@ -51,6 +51,8 @@ public sealed class CapturePreview : IDisposable
     private TextBlock? _stateBadgeText;
     private TextBlock? _pauseLabel;
     private System.Windows.Shapes.Path? _pauseIcon;
+    private System.Windows.Shapes.Path? _virtualPointer;
+    private double? _pointerX, _pointerY;
     private bool _chromeHovered;
     private double _frameAspect = 16.0 / 9;
     private bool _userSizing;
@@ -142,6 +144,40 @@ public sealed class CapturePreview : IDisposable
         UpdateCapture();
     }
 
+    // WGC is change-driven: a perfectly static window may produce no new frames.
+    // When input needs current pixels, request a new window-scoped capture session
+    // rather than assigning a new timestamp to an old bitmap. Keep the displayed
+    // bitmap while waiting, but do not return it as a fresh input observation.
+    public async Task<CaptureSnapshot> SnapshotForInputAsync(bool includeScreenshot)
+    {
+        var request = _dispatcher.Invoke(() =>
+        {
+            var current = Snapshot(false);
+            if (!current.Active || current.IsClosed || current.AgeMs is >= 0 and <= 750)
+                return (Refresh: false, Hwnd: _hwnd, Version: current.FrameVersion);
+            if (!_unavailable && !_wasHidden && !_resizePending && Native.IsWindow(_hwnd) && !Native.IsIconic(_hwnd))
+            {
+                DisposeGrabber();
+                StartGrabber();
+            }
+            return (Refresh: true, Hwnd: _hwnd, Version: current.FrameVersion);
+        });
+        var watch = Stopwatch.StartNew();
+        while (request.Refresh && watch.ElapsedMilliseconds < 1500)
+        {
+            await Task.Delay(25).ConfigureAwait(false);
+            if (_dispatcher.HasShutdownStarted || _dispatcher.HasShutdownFinished)
+                throw new InvalidOperationException("capture_cancelled");
+            var ready = _dispatcher.Invoke(() =>
+            {
+                if (_hwnd != request.Hwnd || !_active) throw new InvalidOperationException("capture_target_changed");
+                return _frameVersion > request.Version && _lastFrameAt != 0 && ElapsedMs(_lastFrameAt) <= 750;
+            });
+            if (ready) break;
+        }
+        return _dispatcher.Invoke(() => Snapshot(includeScreenshot));
+    }
+
     public void Stop()
     {
         _dispatcher.VerifyAccess();
@@ -195,6 +231,26 @@ public sealed class CapturePreview : IDisposable
             result = result with { PngBase64 = Convert.ToBase64String(stream.ToArray()) };
         }
         return result;
+    }
+
+    // Normalized source-frame position comes only from acknowledged virtual-input state.
+    // This overlay has no physical cursor polling and cannot create input by itself.
+    public void SetVirtualPointer(double? x, double? y)
+    {
+        _dispatcher.VerifyAccess();
+        _pointerX = x; _pointerY = y;
+        UpdateVirtualPointer();
+    }
+    private void UpdateVirtualPointer()
+    {
+        if (_virtualPointer is null || _surface is null) return;
+        bool visible = _pointerX is >= 0 and <= 1 && _pointerY is >= 0 and <= 1;
+        _virtualPointer.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        if (!visible) return;
+        double width = _surface.ActualWidth, height = _surface.ActualHeight;
+        double contentWidth = Math.Min(width, height * _frameAspect), contentHeight = contentWidth / _frameAspect;
+        _virtualPointer.RenderTransform = new TranslateTransform((width - contentWidth) / 2 + _pointerX!.Value * contentWidth,
+            (height - contentHeight) / 2 + _pointerY!.Value * contentHeight);
     }
 
     private void OnTick(object? sender, EventArgs e)
@@ -454,6 +510,12 @@ public sealed class CapturePreview : IDisposable
         _emptyText = new TextBlock { Text = _captureStatus, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(15),
             HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Foreground = Brushes.LightGray };
         surface.Children.Add(_image); surface.Children.Add(_emptyText);
+        _pointerX = _pointerY = null;
+        _virtualPointer = new System.Windows.Shapes.Path { Data = Geometry.Parse("M 0,0 L 0,17 L 4,13 L 8,21 L 11,19 L 7,12 L 14,12 Z"),
+            Fill = Brushes.White, Stroke = Brushes.Black, StrokeThickness = 1.5, IsHitTestVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed };
+        surface.Children.Add(_virtualPointer);
+        surface.SizeChanged += (_, _) => UpdateVirtualPointer();
 
         var chrome = _chrome = new Grid { Opacity = 0, IsHitTestVisible = false };
         chrome.Children.Add(new Border { Height = 78, VerticalAlignment = VerticalAlignment.Top,

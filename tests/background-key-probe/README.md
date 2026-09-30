@@ -56,7 +56,7 @@ Downloaded primary-source snapshots and their SHA-256 hashes are retained in `so
 python -B ./probe.py
 dotnet build NativeEditTests.csproj -c Release --verbosity minimal
 python -B ./adapter_test.py
-python -B ./controller_test.py --controller C:/Users/Administrator/plugins/windows-background-control/runtime/BackgroundControl.exe
+python -B ./controller_test.py --controller <installed-plugin-root>/runtime/BackgroundControl.exe
 ```
 
 Build used .NET 10 without additional NuGet dependencies. Local build metadata was scoped to this directory. The fixtures have a 12-second self-close timer; the full-controller test has a 16-second owned-process watchdog and explicit final cleanup.
